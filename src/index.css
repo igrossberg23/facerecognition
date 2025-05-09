@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+body {
+	margin: 0;
+	padding: 0;
+	font-family: 'Courier New', Courier, monospace;
+	/* background: linear-gradient(89deg, #c9f370, #fffe76); */
+	background: linear-gradient(89deg, #d9f1a8, #98d695);
+}
