@@ -1,14 +1,46 @@
+import { useContext, useState } from 'react';
+import { AuthContext } from '../../store/auth-context';
+
 export interface ImageLinkFormProps {
 	imageUrl: string;
 	onInputChange: React.ChangeEventHandler<HTMLInputElement>;
-	onButtonSubmit: React.MouseEventHandler<HTMLButtonElement>;
+	calcFaceBoxes: (regions: any) => void;
 }
 
 export default function ImageLinkForm({
 	imageUrl,
 	onInputChange,
-	onButtonSubmit,
+	calcFaceBoxes,
 }: ImageLinkFormProps) {
+	const [isLoading, setIsLoading] = useState(false);
+	const { user, updateEntries } = useContext(AuthContext);
+
+	const handleSubmit = async () => {
+		setIsLoading(true);
+		try {
+			const rawResponse = await fetch(
+				'http://localhost:3000/api/process-image',
+				{
+					method: 'post',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						id: user.id,
+						image: imageUrl,
+					}),
+				}
+			);
+
+			const res = await rawResponse.json();
+			updateEntries(Number(res.updatedEntries.entries));
+			calcFaceBoxes(res.regions);
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 	return (
 		<div className='flex flex-col items-center gap-2 m-4'>
 			<p className='text-xl text-emerald-900'>
@@ -23,8 +55,8 @@ export default function ImageLinkForm({
 				/>
 				<button
 					className='rounded-md shadow-md w-2/5 hover:scale-105 text-lg bg-emerald-200 text-emerald-900 cursor-pointer'
-					onClick={onButtonSubmit}>
-					Detect
+					onClick={handleSubmit}>
+					{isLoading ? 'Loading...' : 'Detect'}
 				</button>
 			</div>
 		</div>

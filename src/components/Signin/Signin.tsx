@@ -1,7 +1,6 @@
 import { useContext, useState } from 'react';
 import TextInput from '../general/TextInput';
 import Button from '../general/Button';
-import { isValidName, isValidPassword } from '../../lib/validation';
 import { AuthContext } from '../../store/auth-context';
 
 export interface SigninProps {
@@ -9,8 +8,7 @@ export interface SigninProps {
 }
 
 export default function Signin({ onRouteChange }: SigninProps) {
-	const [formData, setFormData] = useState({ username: '', password: '' });
-	const [error, setError] = useState({ username: false, password: false });
+	const [formData, setFormData] = useState({ email: '', password: '' });
 	const [errorText, setErrorText] = useState('');
 	const { signIn } = useContext(AuthContext);
 
@@ -19,29 +17,27 @@ export default function Signin({ onRouteChange }: SigninProps) {
 			setFormData((prev) => ({ ...prev, [name]: e.target.value }));
 		};
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (!isValidName(formData.username)) {
-			setError((prev) => ({ ...prev, username: true }));
-			setErrorText('Please enter a valid username');
-			return;
-		} else {
-			setError((prev) => ({ ...prev, username: false }));
-		}
+		try {
+			const rawResponse = await fetch('http://localhost:3000/api/signin', {
+				method: 'post',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(formData),
+			});
 
-		if (!isValidPassword(formData.password)) {
-			setError((prev) => ({ ...prev, password: true }));
-			setErrorText('Please enter a valid password');
-			return;
-		} else {
-			setError((prev) => ({ ...prev, password: false }));
-		}
+			if (!rawResponse.ok) throw new Error('Invalid Credentials');
 
-		// http request to backend with formData
-		console.log(formData);
-		onRouteChange('home');
-		signIn({ username: formData.username });
+			const res = await rawResponse.json();
+			signIn(res);
+			onRouteChange('home');
+		} catch (error) {
+			console.log(error);
+			setErrorText('Invalid Credentials');
+		}
 	};
 
 	return (
@@ -49,16 +45,14 @@ export default function Signin({ onRouteChange }: SigninProps) {
 			<h1 className='text-2xl mb-4'>Sign In</h1>
 			<form onSubmit={handleSubmit}>
 				<TextInput
-					title='User Name'
-					name='username'
-					error={error.username}
-					value={formData.username}
+					title='Email'
+					name='email'
+					value={formData.email}
 					onChange={handleFormChange}
 				/>
 				<TextInput
 					title='Password'
 					name='password'
-					error={error.password}
 					type='password'
 					value={formData.password}
 					onChange={handleFormChange}

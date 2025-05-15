@@ -1,18 +1,30 @@
 import { createContext, useState } from 'react';
+import type { User } from '../lib/types.ts';
+
+const emptyUser = {
+	name: '',
+	email: '',
+	entries: -1,
+	id: -1,
+};
 
 const initAuth = {
 	isSignedIn: false,
-	username: '',
-	signIn: ({ username }: { username: string }) => {
-		username;
+	user: emptyUser,
+	updateEntries: (newEntries: number) => {
+		newEntries;
+	},
+	signIn: (user: User) => {
+		user;
 	},
 	signOut: () => {},
 };
 
 interface AuthContextType {
 	isSignedIn: boolean;
-	username: string;
-	signIn: ({ username }: { username: string }) => void;
+	user: User;
+	updateEntries: (newEntries: number) => void;
+	signIn: (user: User) => void;
 	signOut: () => void;
 }
 
@@ -24,23 +36,28 @@ export default function AuthContextProvider({
 	children: React.ReactNode;
 }) {
 	const [isSignedIn, setIsSignedIn] = useState(false);
-	const [username, setUsername] = useState('');
+	const [user, setUser] = useState(emptyUser);
 
-	const signIn = ({ username }: { username: string }) => {
+	const signIn = (user: User) => {
 		setIsSignedIn(true);
-		setUsername(username);
+		setUser(user);
 	};
 
 	const signOut = () => {
 		setIsSignedIn(false);
-		setUsername('');
+		setUser(emptyUser);
+	};
+
+	const updateEntries = (newEntries: number) => {
+		setUser((prev) => ({ ...prev, entries: newEntries }));
 	};
 
 	return (
 		<AuthContext.Provider
 			value={{
 				isSignedIn,
-				username,
+				user,
+				updateEntries,
 				signIn,
 				signOut,
 			}}>

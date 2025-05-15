@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import TextInput from '../general/TextInput';
 import Button from '../general/Button';
-import { isValidName, isValidPassword } from '../../lib/validation';
+import {
+	isValidEmail,
+	isValidName,
+	isValidPassword,
+} from '../../lib/validation';
+import { AuthContext } from '../../store/auth-context';
 
 export interface RegisterProps {
 	onRouteChange: (route: string) => void;
@@ -10,22 +15,23 @@ export interface RegisterProps {
 export default function Register({ onRouteChange }: RegisterProps) {
 	const [formData, setFormData] = useState({
 		name: '',
-		username: '',
+		email: '',
 		password: '',
 	});
 	const [error, setError] = useState({
 		name: false,
-		username: false,
+		email: false,
 		password: false,
 	});
 	const [errorText, setErrorText] = useState('');
+	const { signIn } = useContext(AuthContext);
 
 	const handleFormChange =
 		(name: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
 			setFormData((prev) => ({ ...prev, [name]: e.target.value }));
 		};
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		if (!isValidName(formData.name)) {
@@ -36,12 +42,12 @@ export default function Register({ onRouteChange }: RegisterProps) {
 			setError((prev) => ({ ...prev, name: false }));
 		}
 
-		if (!isValidName(formData.username)) {
-			setError((prev) => ({ ...prev, username: true }));
-			setErrorText('Please enter a valid username');
+		if (!isValidEmail(formData.email)) {
+			setError((prev) => ({ ...prev, email: true }));
+			setErrorText('Please enter a valid email address');
 			return;
 		} else {
-			setError((prev) => ({ ...prev, username: false }));
+			setError((prev) => ({ ...prev, email: false }));
 		}
 
 		if (!isValidPassword(formData.password)) {
@@ -52,9 +58,22 @@ export default function Register({ onRouteChange }: RegisterProps) {
 			setError((prev) => ({ ...prev, password: false }));
 		}
 
-		// http request to backend with formData
-		console.log(formData);
-		onRouteChange('home');
+		try {
+			const rawResponse = await fetch('http://localhost:3000/api/register', {
+				method: 'post',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(formData),
+			});
+
+			const res = await rawResponse.json();
+			signIn(res);
+			onRouteChange('home');
+		} catch (error) {
+			console.log(error);
+			setErrorText('Invalid Credentials');
+		}
 	};
 
 	return (
@@ -69,10 +88,10 @@ export default function Register({ onRouteChange }: RegisterProps) {
 					onChange={handleFormChange}
 				/>
 				<TextInput
-					title='User Name'
-					name='username'
-					error={error.username}
-					value={formData.username}
+					title='Email'
+					name='email'
+					error={error.email}
+					value={formData.email}
 					onChange={handleFormChange}
 				/>
 				<TextInput

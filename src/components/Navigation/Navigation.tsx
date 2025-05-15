@@ -16,7 +16,7 @@ export default function Navigation({ onRouteChange }: NavigationProps) {
 	};
 
 	return (
-		<nav className='flex justify-end'>
+		<nav className='flex justify-end gap-2'>
 			{isSignedIn ? (
 				<p
 					onClick={handleSignOut}

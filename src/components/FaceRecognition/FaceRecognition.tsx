@@ -11,8 +11,9 @@ export default function FaceRecognition({
 	boxes,
 }: FaceRecognitionProps) {
 	if (image.length < 1) return null;
+
 	return (
-		<div className='flex justify-center items-center'>
+		<div className='relative w-max mx-auto'>
 			<img
 				id='input-image'
 				alt='face detection result image'
@@ -21,7 +22,12 @@ export default function FaceRecognition({
 				src={image}
 			/>
 			{boxes.map((box) => (
-				<div className='bounding-box'></div>
+				<div
+					className='bounding-box'
+					key={box.id}
+					style={{
+						...box,
+					}}></div>
 			))}
 		</div>
 	);

@@ -1,6 +1,14 @@
 export interface BoundingBox {
-	left_col: number;
-	right_col: number;
-	top_row: number;
-	bottom_row: number;
+	id: string;
+	left: number;
+	right: number;
+	top: number;
+	bottom: number;
+}
+
+export interface User {
+	email: string;
+	entries: number;
+	id: number;
+	name: string;
 }
